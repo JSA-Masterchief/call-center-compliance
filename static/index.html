@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CallIQ — Call Center Compliance</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #080c14;
+    --surface: #0e1520;
+    --surface2: #141d2e;
+    --border: #1e2d45;
+    --accent: #00d4ff;
+    --accent2: #7c3aed;
+    --accent3: #10b981;
+    --danger: #ef4444;
+    --warn: #f59e0b;
+    --text: #e2eaf6;
+    --muted: #5a7090;
+    --glow: 0 0 30px rgba(0,212,255,0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .noise {
+    position: fixed;
+    inset: 0;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* Header */
+  header {
+    padding: 28px 0 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 40px;
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 0 20px rgba(0,212,255,0.3);
+  }
+
+  .logo-text {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+
+  .logo-text span { color: var(--accent); }
+
+  .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: rgba(0,212,255,0.1);
+    border: 1px solid rgba(0,212,255,0.25);
+    color: var(--accent);
+    letter-spacing: 1px;
+  }
+
+  /* Input Panel */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 24px;
+    transition: border-color 0.3s;
+  }
+
+  .panel:hover { border-color: rgba(0,212,255,0.2); }
+
+  .panel-title {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .panel-title::before {
+    content: '';
+    width: 3px;
+    height: 14px;
+    background: var(--accent);
+    border-radius: 2px;
+    box-shadow: 0 0 8px var(--accent);
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  input, select, textarea {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    padding: 12px 16px;
+    outline: none;
+    transition: all 0.2s;
+    width: 100%;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,212,255,0.1);
+  }
+
+  select option { background: var(--surface2); }
+
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--accent);
+    background: rgba(0,212,255,0.05);
+  }
+
+  .upload-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  .upload-icon { font-size: 32px; margin-bottom: 12px; }
+  .upload-text { font-size: 14px; font-weight: 600; color: var(--text); }
+  .upload-sub { font-size: 12px; color: var(--muted); margin-top: 4px; font-family: 'JetBrains Mono', monospace; }
+
+  .file-ready {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    background: rgba(16,185,129,0.1);
+    border: 1px solid rgba(16,185,129,0.3);
+    border-radius: 8px;
+    padding: 10px 16px;
+    margin-top: 12px;
+    font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent3);
+  }
+
+  .file-ready.show { display: flex; }
+
+  /* Submit Button */
+  .btn-analyze {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--accent), #0095b3);
+    border: none;
+    border-radius: 12px;
+    color: #000;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+
+  .btn-analyze:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,212,255,0.35);
+  }
+
+  .btn-analyze:active { transform: translateY(0); }
+  .btn-analyze:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Loading State */
+  .loading-bar {
+    display: none;
+    height: 2px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 16px;
+  }
+
+  .loading-bar.show { display: block; }
+
+  .loading-bar-inner {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px;
+    animation: loading 2.5s ease-in-out infinite;
+  }
+
+  @keyframes loading {
+    0% { width: 0%; margin-left: 0; }
+    50% { width: 60%; }
+    100% { width: 0%; margin-left: 100%; }
+  }
+
+  .status-msg {
+    display: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    margin-top: 10px;
+    text-align: center;
+  }
+  .status-msg.show { display: block; }
+
+  /* Results */
+  #results { display: none; }
+  #results.show { display: block; animation: fadeUp 0.4s ease; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Score Cards */
+  .score-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .score-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s;
+  }
+
+  .score-card:hover { transform: translateY(-3px); }
+
+  .score-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+
+  .score-card.cyan::before { background: var(--accent); }
+  .score-card.purple::before { background: var(--accent2); }
+  .score-card.green::before { background: var(--accent3); }
+  .score-card.amber::before { background: var(--warn); }
+
+  .score-val {
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+
+  .score-card.cyan .score-val { color: var(--accent); }
+  .score-card.purple .score-val { color: var(--accent2); }
+  .score-card.green .score-val { color: var(--accent3); }
+  .score-card.amber .score-val { color: var(--warn); }
+
+  .score-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* SOP Steps */
+  .sop-steps {
+    display: flex;
+    gap: 8px;
+    margin: 16px 0;
+    flex-wrap: wrap;
+  }
+
+  .sop-step {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid;
+    transition: all 0.2s;
+  }
+
+  .sop-step.pass {
+    background: rgba(16,185,129,0.1);
+    border-color: rgba(16,185,129,0.35);
+    color: var(--accent3);
+  }
+
+  .sop-step.fail {
+    background: rgba(239,68,68,0.08);
+    border-color: rgba(239,68,68,0.3);
+    color: var(--danger);
+  }
+
+  .sop-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+  }
+
+  .sop-step.pass .sop-dot { background: var(--accent3); box-shadow: 0 0 6px var(--accent3); }
+  .sop-step.fail .sop-dot { background: var(--danger); }
+
+  /* Compliance bar */
+  .compliance-bar-wrap {
+    background: var(--surface2);
+    border-radius: 8px;
+    height: 10px;
+    overflow: hidden;
+    margin: 12px 0 6px;
+  }
+
+  .compliance-bar-fill {
+    height: 100%;
+    border-radius: 8px;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(90deg, var(--accent3), var(--accent));
+  }
+
+  /* Transcript box */
+  .transcript-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    color: #a0b4cc;
+    max-height: 240px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  /* Keywords */
+  .keywords-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .kw-tag {
+    background: rgba(124,58,237,0.12);
+    border: 1px solid rgba(124,58,237,0.3);
+    color: #a78bfa;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    transition: all 0.2s;
+  }
+
+  .kw-tag:hover {
+    background: rgba(124,58,237,0.25);
+    border-color: rgba(124,58,237,0.5);
+  }
+
+  /* Analytics pills */
+  .analytics-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  .analytic-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+
+  .analytic-label {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .analytic-value {
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .val-emi, .val-payment { color: var(--accent); }
+  .val-positive { color: var(--accent3); }
+  .val-negative { color: var(--danger); }
+  .val-neutral { color: var(--warn); }
+  .val-none { color: var(--accent3); }
+  .val-rejection { color: var(--warn); }
+
+  /* Raw JSON toggle */
+  .json-toggle {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 16px;
+  }
+
+  .json-toggle:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .json-raw {
+    display: none;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.7;
+    color: #7dd3fc;
+    overflow-x: auto;
+    margin-top: 10px;
+    white-space: pre;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .json-raw.show { display: block; animation: fadeUp 0.3s ease; }
+
+  /* Error state */
+  .error-box {
+    display: none;
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--danger);
+    margin-top: 16px;
+  }
+  .error-box.show { display: block; }
+
+  /* Separator */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 24px 0;
+  }
+
+  /* Section header */
+  .section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  @media (max-width: 768px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .score-grid { grid-template-columns: 1fr 1fr; }
+    .analytics-row { grid-template-columns: 1fr; }
+  }
+
+  /* Pulse dot for live status */
+  .live-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent3);
+    box-shadow: 0 0 0 0 rgba(16,185,129,0.6);
+    animation: pulse 2s infinite;
+    display: inline-block;
+  }
+
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(16,185,129,0.6); }
+    70% { box-shadow: 0 0 0 8px rgba(16,185,129,0); }
+    100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
+  }
+
+  footer {
+    text-align: center;
+    padding: 32px 0 24px;
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    border-top: 1px solid var(--border);
+    margin-top: 48px;
+  }
+</style>
+</head>
+<body>
+<div class="noise"></div>
+
+<div class="container">
+  <header>
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-icon">🎙</div>
+        <div>
+          <div class="logo-text">Call<span>IQ</span></div>
+          <div style="font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:1px;">GUVI HCL Hackathon · Track 3</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span class="live-dot"></span>
+        <span class="badge">COMPLIANCE ENGINE v1.0</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Input Panel -->
+  <div class="panel">
+    <div class="panel-title">Analyze Call Recording</div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Language</label>
+        <select id="language">
+          <option value="Tamil">Tamil (Tanglish)</option>
+          <option value="Hindi">Hindi (Hinglish)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>API Key</label>
+        <input type="password" id="apiKey" placeholder="sk_track3_..." value="sk_track3_987654321"/>
+      </div>
+    </div>
+
+    <div class="form-group" style="margin-bottom:16px;">
+      <label>API Endpoint</label>
+      <input type="text" id="endpoint" placeholder="https://your-domain.com/api/call-analytics" value="/api/call-analytics"/>
+    </div>
+
+    <div class="form-group">
+      <label>Audio File (MP3)</label>
+      <div class="upload-zone" id="uploadZone">
+        <input type="file" id="audioFile" accept=".mp3,audio/mpeg"/>
+        <div class="upload-icon">🎵</div>
+        <div class="upload-text">Drop MP3 file here or click to browse</div>
+        <div class="upload-sub">Supports Hindi (Hinglish) · Tamil (Tanglish)</div>
+      </div>
+      <div class="file-ready" id="fileReady">
+        ✓ <span id="fileName">File loaded</span>
+      </div>
+    </div>
+
+    <button class="btn-analyze" id="analyzeBtn" onclick="analyzeCall()">
+      ⚡ Run Compliance Analysis
+    </button>
+
+    <div class="loading-bar" id="loadingBar"><div class="loading-bar-inner"></div></div>
+    <div class="status-msg" id="statusMsg">● Processing audio through AI pipeline...</div>
+    <div class="error-box" id="errorBox"></div>
+  </div>
+
+  <!-- Results -->
+  <div id="results">
+
+    <!-- Score Cards -->
+    <div class="score-grid">
+      <div class="score-card cyan">
+        <div class="score-val" id="scoreCompliance">—</div>
+        <div class="score-label">Compliance Score</div>
+      </div>
+      <div class="score-card purple">
+        <div class="score-val" id="scorePayment">—</div>
+        <div class="score-label">Payment Intent</div>
+      </div>
+      <div class="score-card green">
+        <div class="score-val" id="scoreSentiment">—</div>
+        <div class="score-label">Sentiment</div>
+      </div>
+      <div class="score-card amber">
+        <div class="score-val" id="scoreAdherence">—</div>
+        <div class="score-label">SOP Status</div>
+      </div>
+    </div>
+
+    <!-- SOP Validation -->
+    <div class="panel">
+      <div class="panel-title">SOP Validation</div>
+      <div class="sop-steps" id="sopSteps"></div>
+      <div class="compliance-bar-wrap">
+        <div class="compliance-bar-fill" id="complianceBar" style="width:0%"></div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace;" id="complianceLabel">0% compliance</div>
+      <div style="margin-top:14px;font-size:13px;color:#a0b4cc;line-height:1.7;" id="sopExplanation"></div>
+    </div>
+
+    <!-- Transcript & Summary -->
+    <div class="panel">
+      <div class="section-head">
+        <div class="panel-title" style="margin-bottom:0">Transcript</div>
+        <span style="font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;" id="langBadge"></span>
+      </div>
+      <div class="transcript-box" id="transcriptBox"></div>
+      <hr class="divider"/>
+      <div class="panel-title" style="margin-bottom:10px">Summary</div>
+      <div style="font-size:14px;line-height:1.8;color:#c4d4e8;" id="summaryBox"></div>
+    </div>
+
+    <!-- Analytics -->
+    <div class="panel">
+      <div class="panel-title">Analytics</div>
+      <div class="analytics-row">
+        <div class="analytic-item">
+          <div class="analytic-label">Payment Preference</div>
+          <div class="analytic-value val-payment" id="analyticsPayment">—</div>
+        </div>
+        <div class="analytic-item">
+          <div class="analytic-label">Rejection Reason</div>
+          <div class="analytic-value val-rejection" id="analyticsRejection">—</div>
+        </div>
+        <div class="analytic-item">
+          <div class="analytic-label">Customer Sentiment</div>
+          <div class="analytic-value" id="analyticsSentiment">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Keywords -->
+    <div class="panel">
+      <div class="panel-title">Keywords Extracted</div>
+      <div class="keywords-wrap" id="keywordsWrap"></div>
+    </div>
+
+    <!-- Raw JSON -->
+    <button class="json-toggle" onclick="toggleJson()">
+      <span id="jsonToggleIcon">▶</span> View Raw JSON Response
+    </button>
+    <div class="json-raw" id="jsonRaw"></div>
+
+  </div>
+
+  <footer>
+    Built for GUVI HCL Hackathon · Call Center Compliance · Powered by Whisper + GPT-4o
+  </footer>
+</div>
+
+<script>
+  let fileBase64 = null;
+
+  // File upload handler
+  document.getElementById('audioFile').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    document.getElementById('fileName').textContent = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+    document.getElementById('fileReady').classList.add('show');
+
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      const b64 = ev.target.result.split(',')[1];
+      fileBase64 = b64;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // Drag & drop
+  const zone = document.getElementById('uploadZone');
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      document.getElementById('audioFile').files = e.dataTransfer.files;
+      document.getElementById('audioFile').dispatchEvent(new Event('change'));
+    }
+  });
+
+  async function analyzeCall() {
+    const endpoint = document.getElementById('endpoint').value.trim();
+    const apiKey = document.getElementById('apiKey').value.trim();
+    const language = document.getElementById('language').value;
+
+    if (!fileBase64) { showError('Please upload an MP3 file first.'); return; }
+    if (!apiKey) { showError('API Key is required.'); return; }
+    if (!endpoint) { showError('Endpoint URL is required.'); return; }
+
+    setLoading(true);
+    hideError();
+    document.getElementById('results').classList.remove('show');
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 180000); // 3 min timeout
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey
+        },
+        body: JSON.stringify({
+          language: language,
+          audioFormat: 'mp3',
+          audioBase64: fileBase64
+        }),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      const raw = await res.text();
+      console.log('Raw response:', raw);
+
+      if (res.status === 401) throw new Error('Unauthorized: Invalid API Key');
+      if (!res.ok) throw new Error('API returned status ' + res.status + ': ' + raw);
+
+      let data;
+      try {
+        data = JSON.parse(raw);
+      } catch(e) {
+        throw new Error('Invalid JSON response: ' + raw.substring(0, 200));
+      }
+
+      console.log('Parsed data:', data);
+      renderResults(data);
+
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        showError('Request timed out after 3 minutes. Try again.');
+      } else {
+        showError(err.message || 'Request failed. Check endpoint and API key.');
+      }
+      console.error('Error:', err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function renderResults(data) {
+    const resultsEl = document.getElementById('results');
+    resultsEl.style.display = 'block';
+
+    // Score cards
+    const score = data.sop_validation?.complianceScore ?? 0;
+    document.getElementById('scoreCompliance').textContent = Math.round(score * 100) + '%';
+    document.getElementById('scorePayment').textContent = (data.analytics?.paymentPreference ?? '—').replace('_', ' ');
+    document.getElementById('scoreSentiment').textContent = data.analytics?.sentiment ?? '—';
+    document.getElementById('scoreAdherence').textContent = data.sop_validation?.adherenceStatus === 'FOLLOWED' ? '✓' : '✗';
+
+    // SOP Steps
+    const sop = data.sop_validation ?? {};
+    const steps = [
+      { key: 'greeting', label: 'Greeting' },
+      { key: 'identification', label: 'Identification' },
+      { key: 'problemStatement', label: 'Problem Statement' },
+      { key: 'solutionOffering', label: 'Solution Offering' },
+      { key: 'closing', label: 'Closing' },
+    ];
+    document.getElementById('sopSteps').innerHTML = steps.map(s =>
+      `<div class="sop-step ${sop[s.key] ? 'pass' : 'fail'}">
+        <div class="sop-dot"></div>${s.label}
+      </div>`
+    ).join('');
+
+    const barEl = document.getElementById('complianceBar');
+    if (barEl) barEl.style.width = (score * 100) + '%';
+    document.getElementById('complianceLabel').textContent = Math.round(score * 100) + '% SOP compliance';
+    document.getElementById('sopExplanation').textContent = sop.explanation ?? '';
+
+    // Transcript & Summary
+    document.getElementById('transcriptBox').textContent = data.transcript ?? '';
+    document.getElementById('summaryBox').textContent = data.summary ?? '';
+    document.getElementById('langBadge').textContent = '🌐 ' + (data.language ?? '');
+
+    // Analytics
+    document.getElementById('analyticsPayment').textContent = data.analytics?.paymentPreference ?? '—';
+    const rejection = data.analytics?.rejectionReason ?? '—';
+    document.getElementById('analyticsRejection').textContent = rejection;
+    document.getElementById('analyticsRejection').className = 'analytic-value ' + (rejection === 'NONE' ? 'val-none' : 'val-rejection');
+
+    const sentiment = data.analytics?.sentiment ?? '';
+    const sentEl = document.getElementById('analyticsSentiment');
+    sentEl.textContent = sentiment;
+    sentEl.className = 'analytic-value val-' + sentiment.toLowerCase();
+
+    // Keywords
+    const kws = data.keywords ?? [];
+    document.getElementById('keywordsWrap').innerHTML = kws.map(k =>
+      `<span class="kw-tag">${k}</span>`
+    ).join('');
+
+    // Raw JSON
+    document.getElementById('jsonRaw').textContent = JSON.stringify(data, null, 2);
+
+    resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function toggleJson() {
+    const el = document.getElementById('jsonRaw');
+    const icon = document.getElementById('jsonToggleIcon');
+    el.classList.toggle('show');
+    icon.textContent = el.classList.contains('show') ? '▼' : '▶';
+  }
+
+  function setLoading(state) {
+    document.getElementById('analyzeBtn').disabled = state;
+    document.getElementById('analyzeBtn').textContent = state ? '⏳ Processing...' : '⚡ Run Compliance Analysis';
+    document.getElementById('loadingBar').classList.toggle('show', state);
+    document.getElementById('statusMsg').classList.toggle('show', state);
+    if (!state) document.getElementById('results').classList.remove('show');
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('errorBox');
+    el.textContent = '⚠ ' + msg;
+    el.classList.add('show');
+  }
+
+  function hideError() {
+    document.getElementById('errorBox').classList.remove('show');
+  }
+</script>
+</body>
+</html>
