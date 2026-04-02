@@ -1,5 +1,4 @@
 import os
-import time
 from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -7,7 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
 from src.models import CallAnalyticsRequest
-from src.celery_worker import process_audio_task
+from src.transcriber import transcribe_audio
+from src.analyzer import analyze_transcript
 
 load_dotenv()
 
@@ -48,16 +48,23 @@ async def call_analytics(
         raise HTTPException(status_code=400, detail="Invalid or missing audioBase64")
 
     try:
-        task = process_audio_task.delay(request.audioBase64, request.language.value)
+        # Process directly without Celery
+        transcript = transcribe_audio(request.audioBase64, request.language.value)
 
-        start = time.time()
-        while not task.ready():
-            if time.time() - start > 120:
-                raise HTTPException(status_code=504, detail="Processing timeout. Retry.")
-            time.sleep(0.5)
+        if not transcript:
+            raise ValueError("Transcription returned empty result.")
 
-        result = task.get()
-        return JSONResponse(content=result, status_code=200)
+        analysis = analyze_transcript(transcript, request.language.value)
+
+        return JSONResponse(content={
+            "status": "success",
+            "language": request.language.value,
+            "transcript": transcript,
+            "summary": analysis.get("summary", ""),
+            "sop_validation": analysis.get("sop_validation", {}),
+            "analytics": analysis.get("analytics", {}),
+            "keywords": analysis.get("keywords", []),
+        }, status_code=200)
 
     except HTTPException:
         raise
