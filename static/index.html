@@ -1,923 +1,1609 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>CallIQ — Call Center Compliance</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<title>CallIQ — Compliance Intelligence Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
-  :root {
-    --bg: #080c14;
-    --surface: #0e1520;
-    --surface2: #141d2e;
-    --border: #1e2d45;
-    --accent: #00d4ff;
-    --accent2: #7c3aed;
-    --accent3: #10b981;
-    --danger: #ef4444;
-    --warn: #f59e0b;
-    --text: #e2eaf6;
-    --muted: #5a7090;
-    --glow: 0 0 30px rgba(0,212,255,0.15);
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Syne', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* Animated background grid */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .noise {
-    position: fixed;
-    inset: 0;
-    opacity: 0.025;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .container {
-    position: relative;
-    z-index: 1;
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 0 24px;
-  }
-
-  /* Header */
-  header {
-    padding: 28px 0 20px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 40px;
-  }
-
-  .header-inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .logo-icon {
-    width: 40px;
-    height: 40px;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    box-shadow: 0 0 20px rgba(0,212,255,0.3);
-  }
-
-  .logo-text {
-    font-size: 22px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-  }
-
-  .logo-text span { color: var(--accent); }
-
-  .badge {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    padding: 4px 10px;
-    border-radius: 20px;
-    background: rgba(0,212,255,0.1);
-    border: 1px solid rgba(0,212,255,0.25);
-    color: var(--accent);
-    letter-spacing: 1px;
-  }
-
-  /* Input Panel */
-  .panel {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 28px;
-    margin-bottom: 24px;
-    transition: border-color 0.3s;
-  }
-
-  .panel:hover { border-color: rgba(0,212,255,0.2); }
-
-  .panel-title {
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .panel-title::before {
-    content: '';
-    width: 3px;
-    height: 14px;
-    background: var(--accent);
-    border-radius: 2px;
-    box-shadow: 0 0 8px var(--accent);
-  }
-
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 16px;
-  }
-
-  .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  label {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--muted);
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-  }
-
-  input, select, textarea {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    color: var(--text);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    padding: 12px 16px;
-    outline: none;
-    transition: all 0.2s;
-    width: 100%;
-  }
-
-  input:focus, select:focus, textarea:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(0,212,255,0.1);
-  }
-
-  select option { background: var(--surface2); }
-
-  .upload-zone {
-    border: 2px dashed var(--border);
-    border-radius: 12px;
-    padding: 32px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .upload-zone:hover, .upload-zone.drag-over {
-    border-color: var(--accent);
-    background: rgba(0,212,255,0.05);
-  }
-
-  .upload-zone input[type="file"] {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    cursor: pointer;
-    width: 100%;
-    height: 100%;
-  }
-
-  .upload-icon { font-size: 32px; margin-bottom: 12px; }
-  .upload-text { font-size: 14px; font-weight: 600; color: var(--text); }
-  .upload-sub { font-size: 12px; color: var(--muted); margin-top: 4px; font-family: 'JetBrains Mono', monospace; }
-
-  .file-ready {
-    display: none;
-    align-items: center;
-    gap: 10px;
-    background: rgba(16,185,129,0.1);
-    border: 1px solid rgba(16,185,129,0.3);
-    border-radius: 8px;
-    padding: 10px 16px;
-    margin-top: 12px;
-    font-size: 13px;
-    font-family: 'JetBrains Mono', monospace;
-    color: var(--accent3);
-  }
-
-  .file-ready.show { display: flex; }
-
-  /* Submit Button */
-  .btn-analyze {
-    width: 100%;
-    padding: 16px;
-    background: linear-gradient(135deg, var(--accent), #0095b3);
-    border: none;
-    border-radius: 12px;
-    color: #000;
-    font-family: 'Syne', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    transition: all 0.3s;
-    position: relative;
-    overflow: hidden;
-    margin-top: 8px;
-  }
-
-  .btn-analyze:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(0,212,255,0.35);
-  }
-
-  .btn-analyze:active { transform: translateY(0); }
-  .btn-analyze:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-  }
-
-  /* Loading State */
-  .loading-bar {
-    display: none;
-    height: 2px;
-    background: var(--border);
-    border-radius: 2px;
-    overflow: hidden;
-    margin-top: 16px;
-  }
-
-  .loading-bar.show { display: block; }
-
-  .loading-bar-inner {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    border-radius: 2px;
-    animation: loading 2.5s ease-in-out infinite;
-  }
-
-  @keyframes loading {
-    0% { width: 0%; margin-left: 0; }
-    50% { width: 60%; }
-    100% { width: 0%; margin-left: 100%; }
-  }
-
-  .status-msg {
-    display: none;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    color: var(--accent);
-    margin-top: 10px;
-    text-align: center;
-  }
-  .status-msg.show { display: block; }
-
-  /* Results */
-  #results { display: none; }
-  #results.show { display: block; animation: fadeUp 0.4s ease; }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* Score Cards */
-  .score-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin-bottom: 24px;
-  }
-
-  .score-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 20px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.2s;
-  }
-
-  .score-card:hover { transform: translateY(-3px); }
-
-  .score-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-  }
-
-  .score-card.cyan::before { background: var(--accent); }
-  .score-card.purple::before { background: var(--accent2); }
-  .score-card.green::before { background: var(--accent3); }
-  .score-card.amber::before { background: var(--warn); }
-
-  .score-val {
-    font-size: 28px;
-    font-weight: 800;
-    margin-bottom: 4px;
-  }
-
-  .score-card.cyan .score-val { color: var(--accent); }
-  .score-card.purple .score-val { color: var(--accent2); }
-  .score-card.green .score-val { color: var(--accent3); }
-  .score-card.amber .score-val { color: var(--warn); }
-
-  .score-label {
-    font-size: 11px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-
-  /* SOP Steps */
-  .sop-steps {
-    display: flex;
-    gap: 8px;
-    margin: 16px 0;
-    flex-wrap: wrap;
-  }
-
-  .sop-step {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 7px 14px;
-    border-radius: 30px;
-    font-size: 13px;
-    font-weight: 600;
-    border: 1px solid;
-    transition: all 0.2s;
-  }
-
-  .sop-step.pass {
-    background: rgba(16,185,129,0.1);
-    border-color: rgba(16,185,129,0.35);
-    color: var(--accent3);
-  }
-
-  .sop-step.fail {
-    background: rgba(239,68,68,0.08);
-    border-color: rgba(239,68,68,0.3);
-    color: var(--danger);
-  }
-
-  .sop-dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-  }
-
-  .sop-step.pass .sop-dot { background: var(--accent3); box-shadow: 0 0 6px var(--accent3); }
-  .sop-step.fail .sop-dot { background: var(--danger); }
-
-  /* Compliance bar */
-  .compliance-bar-wrap {
-    background: var(--surface2);
-    border-radius: 8px;
-    height: 10px;
-    overflow: hidden;
-    margin: 12px 0 6px;
-  }
-
-  .compliance-bar-fill {
-    height: 100%;
-    border-radius: 8px;
-    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
-    background: linear-gradient(90deg, var(--accent3), var(--accent));
-  }
-
-  /* Transcript box */
-  .transcript-box {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    line-height: 1.8;
-    color: #a0b4cc;
-    max-height: 240px;
-    overflow-y: auto;
-    white-space: pre-wrap;
-    scrollbar-width: thin;
-    scrollbar-color: var(--border) transparent;
-  }
-
-  /* Keywords */
-  .keywords-wrap {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 8px;
-  }
-
-  .kw-tag {
-    background: rgba(124,58,237,0.12);
-    border: 1px solid rgba(124,58,237,0.3);
-    color: #a78bfa;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-family: 'JetBrains Mono', monospace;
-    transition: all 0.2s;
-  }
-
-  .kw-tag:hover {
-    background: rgba(124,58,237,0.25);
-    border-color: rgba(124,58,237,0.5);
-  }
-
-  /* Analytics pills */
-  .analytics-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 12px;
-    margin-top: 8px;
-  }
-
-  .analytic-item {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 16px;
-  }
-
-  .analytic-label {
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    margin-bottom: 6px;
-  }
-
-  .analytic-value {
-    font-size: 14px;
-    font-weight: 700;
-    font-family: 'JetBrains Mono', monospace;
-  }
-
-  .val-emi, .val-payment { color: var(--accent); }
-  .val-positive { color: var(--accent3); }
-  .val-negative { color: var(--danger); }
-  .val-neutral { color: var(--warn); }
-  .val-none { color: var(--accent3); }
-  .val-rejection { color: var(--warn); }
-
-  /* Raw JSON toggle */
-  .json-toggle {
-    background: none;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--muted);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    padding: 8px 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 16px;
-  }
-
-  .json-toggle:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-
-  .json-raw {
-    display: none;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 20px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    line-height: 1.7;
-    color: #7dd3fc;
-    overflow-x: auto;
-    margin-top: 10px;
-    white-space: pre;
-    scrollbar-width: thin;
-    scrollbar-color: var(--border) transparent;
-  }
-
-  .json-raw.show { display: block; animation: fadeUp 0.3s ease; }
-
-  /* Error state */
-  .error-box {
-    display: none;
-    background: rgba(239,68,68,0.08);
-    border: 1px solid rgba(239,68,68,0.3);
-    border-radius: 12px;
-    padding: 16px 20px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    color: var(--danger);
-    margin-top: 16px;
-  }
-  .error-box.show { display: block; }
-
-  /* Separator */
-  .divider {
-    border: none;
-    border-top: 1px solid var(--border);
-    margin: 24px 0;
-  }
-
-  /* Section header */
-  .section-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
-  }
-
-  @media (max-width: 768px) {
-    .form-grid { grid-template-columns: 1fr; }
-    .score-grid { grid-template-columns: 1fr 1fr; }
-    .analytics-row { grid-template-columns: 1fr; }
-  }
-
-  /* Pulse dot for live status */
-  .live-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--accent3);
-    box-shadow: 0 0 0 0 rgba(16,185,129,0.6);
-    animation: pulse 2s infinite;
-    display: inline-block;
-  }
-
-  @keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(16,185,129,0.6); }
-    70% { box-shadow: 0 0 0 8px rgba(16,185,129,0); }
-    100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
-  }
-
-  footer {
-    text-align: center;
-    padding: 32px 0 24px;
-    font-size: 12px;
-    color: var(--muted);
-    font-family: 'JetBrains Mono', monospace;
-    border-top: 1px solid var(--border);
-    margin-top: 48px;
-  }
+/* ============================================================
+   DESIGN SYSTEM — CSS VARIABLES
+   ============================================================ */
+:root {
+  --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="dark"] {
+  --bg-base:       #070b12;
+  --bg-surface:    #0c1220;
+  --bg-elevated:   #111827;
+  --bg-subtle:     #161f30;
+  --border:        rgba(255,255,255,0.07);
+  --border-strong: rgba(255,255,255,0.13);
+  --text-primary:  #f0f4ff;
+  --text-secondary:#8899bb;
+  --text-muted:    #4a5c7a;
+  --accent:        #3b82f6;
+  --accent-glow:   rgba(59,130,246,0.25);
+  --accent-soft:   rgba(59,130,246,0.1);
+  --green:         #10b981;
+  --green-soft:    rgba(16,185,129,0.1);
+  --red:           #f43f5e;
+  --red-soft:      rgba(244,63,94,0.1);
+  --amber:         #f59e0b;
+  --amber-soft:    rgba(245,158,11,0.1);
+  --purple:        #8b5cf6;
+  --purple-soft:   rgba(139,92,246,0.1);
+  --shadow-sm:     0 1px 3px rgba(0,0,0,0.4);
+  --shadow-md:     0 4px 20px rgba(0,0,0,0.5);
+  --shadow-lg:     0 8px 40px rgba(0,0,0,0.6);
+}
+
+[data-theme="light"] {
+  --bg-base:       #f4f6fb;
+  --bg-surface:    #ffffff;
+  --bg-elevated:   #ffffff;
+  --bg-subtle:     #eef1f8;
+  --border:        rgba(0,0,0,0.07);
+  --border-strong: rgba(0,0,0,0.13);
+  --text-primary:  #0f172a;
+  --text-secondary:#475569;
+  --text-muted:    #94a3b8;
+  --accent:        #2563eb;
+  --accent-glow:   rgba(37,99,235,0.15);
+  --accent-soft:   rgba(37,99,235,0.08);
+  --green:         #059669;
+  --green-soft:    rgba(5,150,105,0.08);
+  --red:           #e11d48;
+  --red-soft:      rgba(225,29,72,0.08);
+  --amber:         #d97706;
+  --amber-soft:    rgba(217,119,6,0.08);
+  --purple:        #7c3aed;
+  --purple-soft:   rgba(124,58,237,0.08);
+  --shadow-sm:     0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md:     0 4px 20px rgba(0,0,0,0.1);
+  --shadow-lg:     0 8px 40px rgba(0,0,0,0.12);
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+  transition: background var(--transition), color var(--transition);
+  overflow-x: hidden;
+}
+
+/* Background texture */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(ellipse 80% 50% at 50% -20%, var(--accent-glow), transparent);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.app { position: relative; z-index: 1; }
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 28px;
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid var(--border);
+  background: rgba(7,11,18,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transition: background var(--transition);
+}
+
+[data-theme="light"] .header {
+  background: rgba(244,246,251,0.85);
+}
+
+.header-inner {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.logo-mark {
+  width: 38px;
+  height: 38px;
+  background: linear-gradient(135deg, var(--accent), var(--purple));
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  box-shadow: 0 0 20px var(--accent-glow);
+  flex-shrink: 0;
+}
+
+.logo-name {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px;
+  letter-spacing: -0.5px;
+  color: var(--text-primary);
+}
+
+.logo-name em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.logo-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-top: 1px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.status-pill {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px;
+  border-radius: 100px;
+  background: var(--green-soft);
+  border: 1px solid rgba(16,185,129,0.2);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--green);
+  font-family: 'DM Mono', monospace;
+}
+
+.pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.5); }
+  50% { box-shadow: 0 0 0 6px rgba(16,185,129,0); }
+}
+
+/* Theme toggle */
+.theme-toggle {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.theme-toggle:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* ============================================================
+   HERO SECTION
+   ============================================================ */
+.hero {
+  padding: 56px 0 40px;
+  text-align: center;
+  animation: fadeUp 0.6s ease both;
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid rgba(59,130,246,0.2);
+  padding: 5px 14px;
+  border-radius: 100px;
+  margin-bottom: 20px;
+}
+
+.hero-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(32px, 5vw, 52px);
+  line-height: 1.1;
+  letter-spacing: -1px;
+  margin-bottom: 16px;
+  color: var(--text-primary);
+}
+
+.hero-title .highlight {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.hero-sub {
+  font-size: 15px;
+  color: var(--text-secondary);
+  max-width: 520px;
+  margin: 0 auto 32px;
+  font-weight: 300;
+}
+
+/* Stats bar */
+.stats-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.stat-item {
+  padding: 12px 24px;
+  text-align: center;
+  border-right: 1px solid var(--border);
+}
+
+.stat-item:last-child { border-right: none; }
+
+.stat-val {
+  font-family: 'DM Mono', monospace;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--accent);
+  display: block;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+/* ============================================================
+   MAIN GRID
+   ============================================================ */
+.main-grid {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: 20px;
+  padding-bottom: 60px;
+  align-items: start;
+}
+
+/* ============================================================
+   CARDS
+   ============================================================ */
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.card:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
+}
+
+.card-header {
+  padding: 18px 22px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-title {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-title-dot {
+  width: 3px;
+  height: 14px;
+  background: var(--accent);
+  border-radius: 2px;
+  box-shadow: 0 0 8px var(--accent);
+}
+
+.card-body { padding: 22px; }
+
+/* ============================================================
+   INPUT PANEL
+   ============================================================ */
+.input-panel { position: sticky; top: 84px; }
+
+.form-group { margin-bottom: 16px; }
+
+.form-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin-bottom: 7px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 11px 15px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  outline: none;
+  transition: all 0.2s;
+  appearance: none;
+}
+
+.form-control:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+  background: var(--bg-elevated);
+}
+
+.form-control::placeholder { color: var(--text-muted); }
+
+select.form-control {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234a5c7a' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+  cursor: pointer;
+}
+
+select.form-control option {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+/* Upload zone */
+.upload-zone {
+  position: relative;
+  border: 2px dashed var(--border-strong);
+  border-radius: 12px;
+  padding: 28px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s;
+  background: var(--bg-subtle);
+}
+
+.upload-zone:hover, .upload-zone.drag-over {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.upload-zone input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+
+.upload-icon {
+  width: 44px;
+  height: 44px;
+  background: var(--accent-soft);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  margin: 0 auto 12px;
+  border: 1px solid rgba(59,130,246,0.2);
+}
+
+.upload-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.upload-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: 'DM Mono', monospace;
+}
+
+.file-badge {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 9px 14px;
+  background: var(--green-soft);
+  border: 1px solid rgba(16,185,129,0.25);
+  border-radius: 8px;
+  font-size: 12px;
+  font-family: 'DM Mono', monospace;
+  color: var(--green);
+}
+
+.file-badge.show { display: flex; }
+
+/* Submit button */
+.btn-submit {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--accent), var(--purple));
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s;
+  letter-spacing: 0.3px;
+  position: relative;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.btn-submit::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.btn-submit:hover::before { opacity: 1; }
+.btn-submit:hover { transform: translateY(-1px); box-shadow: 0 8px 25px rgba(59,130,246,0.4); }
+.btn-submit:active { transform: translateY(0); }
+.btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* Progress */
+.progress-wrap {
+  display: none;
+  margin-top: 14px;
+}
+
+.progress-wrap.show { display: block; }
+
+.progress-track {
+  height: 3px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--purple));
+  border-radius: 3px;
+  animation: progress-anim 2s ease-in-out infinite;
+}
+
+@keyframes progress-anim {
+  0% { width: 0%; margin-left: 0; }
+  50% { width: 70%; }
+  100% { width: 0%; margin-left: 100%; }
+}
+
+.progress-steps {
+  display: flex;
+  justify-content: space-between;
+}
+
+.progress-step {
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: color 0.3s;
+}
+
+.progress-step.active { color: var(--accent); }
+.progress-step.done { color: var(--green); }
+
+.step-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* Error */
+.error-banner {
+  display: none;
+  margin-top: 12px;
+  padding: 12px 16px;
+  background: var(--red-soft);
+  border: 1px solid rgba(244,63,94,0.25);
+  border-radius: 10px;
+  font-size: 13px;
+  color: var(--red);
+  font-family: 'DM Mono', monospace;
+}
+
+.error-banner.show { display: block; }
+
+/* ============================================================
+   RESULTS PANEL
+   ============================================================ */
+.results-panel { display: none; }
+.results-panel.show {
+  display: block;
+  animation: fadeUp 0.4s ease both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 40px;
+  text-align: center;
+  color: var(--text-muted);
+  gap: 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--bg-surface);
+}
+
+.empty-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: var(--bg-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  border: 1px solid var(--border);
+}
+
+.empty-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.empty-sub {
+  font-size: 13px;
+  max-width: 280px;
+  line-height: 1.7;
+}
+
+/* ============================================================
+   METRIC CARDS ROW
+   ============================================================ */
+.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.metric-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 16px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s;
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.metric-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 14px 14px 0 0;
+}
+
+.metric-card.blue::after { background: linear-gradient(90deg, var(--accent), var(--purple)); }
+.metric-card.green::after { background: var(--green); }
+.metric-card.amber::after { background: var(--amber); }
+.metric-card.purple::after { background: var(--purple); }
+
+.metric-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.metric-card.blue .metric-icon { background: var(--accent-soft); }
+.metric-card.green .metric-icon { background: var(--green-soft); }
+.metric-card.amber .metric-icon { background: var(--amber-soft); }
+.metric-card.purple .metric-icon { background: var(--purple-soft); }
+
+.metric-val {
+  font-family: 'DM Mono', monospace;
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1;
+  margin-bottom: 5px;
+}
+
+.metric-card.blue .metric-val { color: var(--accent); }
+.metric-card.green .metric-val { color: var(--green); }
+.metric-card.amber .metric-val { color: var(--amber); }
+.metric-card.purple .metric-val { color: var(--purple); }
+
+.metric-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* ============================================================
+   SOP SECTION
+   ============================================================ */
+.sop-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.sop-item {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 10px;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.sop-item.pass {
+  background: var(--green-soft);
+  border-color: rgba(16,185,129,0.3);
+}
+
+.sop-item.fail {
+  background: var(--red-soft);
+  border-color: rgba(244,63,94,0.3);
+}
+
+.sop-item-icon {
+  font-size: 18px;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.sop-item-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+}
+
+.sop-item.pass .sop-item-label { color: var(--green); }
+.sop-item.fail .sop-item-label { color: var(--red); }
+
+/* Compliance bar */
+.compliance-section {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 8px;
+}
+
+.compliance-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.compliance-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.compliance-score {
+  font-family: 'DM Mono', monospace;
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--accent);
+}
+
+.compliance-track {
+  height: 8px;
+  background: var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.compliance-fill {
+  height: 100%;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--accent), var(--green));
+  transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 0%;
+}
+
+.compliance-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-family: 'DM Mono', monospace;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 100px;
+}
+
+.compliance-status.followed {
+  background: var(--green-soft);
+  color: var(--green);
+  border: 1px solid rgba(16,185,129,0.25);
+}
+
+.compliance-status.not-followed {
+  background: var(--amber-soft);
+  color: var(--amber);
+  border: 1px solid rgba(245,158,11,0.25);
+}
+
+.compliance-explanation {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+/* ============================================================
+   TRANSCRIPT SECTION
+   ============================================================ */
+.transcript-box {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  font-family: 'DM Mono', monospace;
+  font-size: 12.5px;
+  line-height: 1.9;
+  color: var(--text-secondary);
+  max-height: 220px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.summary-box {
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--text-secondary);
+  padding: 14px 18px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  border-left: 3px solid var(--accent);
+}
+
+/* ============================================================
+   ANALYTICS SECTION
+   ============================================================ */
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.analytic-item {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  transition: all 0.2s;
+}
+
+.analytic-item:hover {
+  border-color: var(--border-strong);
+}
+
+.analytic-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.analytic-value {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.val-blue { color: var(--accent); }
+.val-green { color: var(--green); }
+.val-red { color: var(--red); }
+.val-amber { color: var(--amber); }
+.val-purple { color: var(--purple); }
+
+.sentiment-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ============================================================
+   KEYWORDS
+   ============================================================ */
+.keywords-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.kw-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 13px;
+  background: var(--purple-soft);
+  border: 1px solid rgba(139,92,246,0.2);
+  border-radius: 100px;
+  font-size: 12px;
+  color: var(--purple);
+  font-weight: 500;
+  transition: all 0.2s;
+  cursor: default;
+}
+
+.kw-chip:hover {
+  background: rgba(139,92,246,0.2);
+  border-color: rgba(139,92,246,0.4);
+  transform: translateY(-1px);
+}
+
+/* ============================================================
+   JSON VIEWER
+   ============================================================ */
+.json-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  color: var(--text-muted);
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 4px;
+}
+
+.json-toggle-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.json-viewer {
+  display: none;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  line-height: 1.8;
+  color: #7dd3fc;
+  overflow-x: auto;
+  white-space: pre;
+  margin-top: 10px;
+  scrollbar-width: thin;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+[data-theme="light"] .json-viewer { color: #1d4ed8; }
+.json-viewer.show { display: block; animation: fadeUp 0.3s ease; }
+
+/* ============================================================
+   SECTION SPACING
+   ============================================================ */
+.section { margin-bottom: 16px; }
+.section:last-child { margin-bottom: 0; }
+
+/* Tabs for results */
+.result-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 16px;
+}
+
+.result-tab {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: 'Outfit', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.result-tab.active {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: fadeUp 0.3s ease; }
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 24px 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: 'DM Mono', monospace;
+}
+
+footer span { color: var(--accent); }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 900px) {
+  .main-grid { grid-template-columns: 1fr; }
+  .input-panel { position: static; }
+  .metrics-row { grid-template-columns: repeat(2, 1fr); }
+  .sop-grid { grid-template-columns: repeat(3, 1fr); }
+  .analytics-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+  .container { padding: 0 16px; }
+  .stats-bar { flex-direction: column; width: 100%; }
+  .stat-item { border-right: none; border-bottom: 1px solid var(--border); }
+  .stat-item:last-child { border-bottom: none; }
+  .hero { padding: 32px 0 24px; }
+}
+
+/* Divider */
+.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 16px 0;
+}
 </style>
 </head>
 <body>
-<div class="noise"></div>
+<div class="app">
 
-<div class="container">
-  <header>
-    <div class="header-inner">
-      <div class="logo">
-        <div class="logo-icon">🎙</div>
-        <div>
-          <div class="logo-text">Call<span>IQ</span></div>
-          <div style="font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:1px;">GUVI HCL Hackathon · Track 3</div>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="container">
+      <div class="header-inner">
+        <div class="logo">
+          <div class="logo-mark">🎙</div>
+          <div>
+            <div class="logo-name">Call<em>IQ</em></div>
+            <div class="logo-tag">Compliance Intelligence Platform</div>
+          </div>
         </div>
-      </div>
-      <div style="display:flex;align-items:center;gap:12px;">
-        <span class="live-dot"></span>
-        <span class="badge">COMPLIANCE ENGINE v1.0</span>
+        <div class="header-right">
+          <div class="status-pill">
+            <div class="pulse"></div>
+            API LIVE
+          </div>
+          <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme" id="themeBtn">🌙</button>
+        </div>
       </div>
     </div>
   </header>
 
-  <!-- Input Panel -->
-  <div class="panel">
-    <div class="panel-title">Analyze Call Recording</div>
-
-    <div class="form-grid">
-      <div class="form-group">
-        <label>Language</label>
-        <select id="language">
-          <option value="Tamil">Tamil (Tanglish)</option>
-          <option value="Hindi">Hindi (Hinglish)</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>API Key</label>
-        <input type="password" id="apiKey" placeholder="sk_track3_..." value="sk_track3_987654321"/>
-      </div>
-    </div>
-
-    <div class="form-group" style="margin-bottom:16px;">
-      <label>API Endpoint</label>
-      <input type="text" id="endpoint" placeholder="https://your-domain.com/api/call-analytics" value="/api/call-analytics"/>
-    </div>
-
-    <div class="form-group">
-      <label>Audio File (MP3)</label>
-      <div class="upload-zone" id="uploadZone">
-        <input type="file" id="audioFile" accept=".mp3,audio/mpeg"/>
-        <div class="upload-icon">🎵</div>
-        <div class="upload-text">Drop MP3 file here or click to browse</div>
-        <div class="upload-sub">Supports Hindi (Hinglish) · Tamil (Tanglish)</div>
-      </div>
-      <div class="file-ready" id="fileReady">
-        ✓ <span id="fileName">File loaded</span>
-      </div>
-    </div>
-
-    <button class="btn-analyze" id="analyzeBtn" onclick="analyzeCall()">
-      ⚡ Run Compliance Analysis
-    </button>
-
-    <div class="loading-bar" id="loadingBar"><div class="loading-bar-inner"></div></div>
-    <div class="status-msg" id="statusMsg">● Processing audio through AI pipeline...</div>
-    <div class="error-box" id="errorBox"></div>
-  </div>
-
-  <!-- Results -->
-  <div id="results">
-
-    <!-- Score Cards -->
-    <div class="score-grid">
-      <div class="score-card cyan">
-        <div class="score-val" id="scoreCompliance">—</div>
-        <div class="score-label">Compliance Score</div>
-      </div>
-      <div class="score-card purple">
-        <div class="score-val" id="scorePayment">—</div>
-        <div class="score-label">Payment Intent</div>
-      </div>
-      <div class="score-card green">
-        <div class="score-val" id="scoreSentiment">—</div>
-        <div class="score-label">Sentiment</div>
-      </div>
-      <div class="score-card amber">
-        <div class="score-val" id="scoreAdherence">—</div>
-        <div class="score-label">SOP Status</div>
-      </div>
-    </div>
-
-    <!-- SOP Validation -->
-    <div class="panel">
-      <div class="panel-title">SOP Validation</div>
-      <div class="sop-steps" id="sopSteps"></div>
-      <div class="compliance-bar-wrap">
-        <div class="compliance-bar-fill" id="complianceBar" style="width:0%"></div>
-      </div>
-      <div style="font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace;" id="complianceLabel">0% compliance</div>
-      <div style="margin-top:14px;font-size:13px;color:#a0b4cc;line-height:1.7;" id="sopExplanation"></div>
-    </div>
-
-    <!-- Transcript & Summary -->
-    <div class="panel">
-      <div class="section-head">
-        <div class="panel-title" style="margin-bottom:0">Transcript</div>
-        <span style="font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;" id="langBadge"></span>
-      </div>
-      <div class="transcript-box" id="transcriptBox"></div>
-      <hr class="divider"/>
-      <div class="panel-title" style="margin-bottom:10px">Summary</div>
-      <div style="font-size:14px;line-height:1.8;color:#c4d4e8;" id="summaryBox"></div>
-    </div>
-
-    <!-- Analytics -->
-    <div class="panel">
-      <div class="panel-title">Analytics</div>
-      <div class="analytics-row">
-        <div class="analytic-item">
-          <div class="analytic-label">Payment Preference</div>
-          <div class="analytic-value val-payment" id="analyticsPayment">—</div>
+  <!-- HERO -->
+  <div class="container">
+    <div class="hero">
+      <div class="hero-eyebrow">⚡ GUVI HCL Hackathon · Track 3</div>
+      <h1 class="hero-title">
+        AI-Powered Call Center<br><span class="highlight">Compliance Analysis</span>
+      </h1>
+      <p class="hero-sub">Upload a call recording in Hindi or Tamil. Get instant transcription, SOP compliance scoring, payment classification, and keyword extraction.</p>
+      <div class="stats-bar">
+        <div class="stat-item">
+          <span class="stat-val" id="statCalls">0</span>
+          <div class="stat-label">Calls Analyzed</div>
         </div>
-        <div class="analytic-item">
-          <div class="analytic-label">Rejection Reason</div>
-          <div class="analytic-value val-rejection" id="analyticsRejection">—</div>
+        <div class="stat-item">
+          <span class="stat-val">Whisper</span>
+          <div class="stat-label">STT Model</div>
         </div>
-        <div class="analytic-item">
-          <div class="analytic-label">Customer Sentiment</div>
-          <div class="analytic-value" id="analyticsSentiment">—</div>
+        <div class="stat-item">
+          <span class="stat-val">LLaMA</span>
+          <div class="stat-label">NLP Engine</div>
+        </div>
+        <div class="stat-item">
+          <span class="stat-val">Hi · Ta</span>
+          <div class="stat-label">Languages</div>
         </div>
       </div>
     </div>
 
-    <!-- Keywords -->
-    <div class="panel">
-      <div class="panel-title">Keywords Extracted</div>
-      <div class="keywords-wrap" id="keywordsWrap"></div>
+    <!-- MAIN GRID -->
+    <div class="main-grid">
+
+      <!-- LEFT: INPUT PANEL -->
+      <div class="input-panel">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="card-title-dot"></div>
+              Configure Analysis
+            </div>
+          </div>
+          <div class="card-body">
+
+            <div class="form-group">
+              <label class="form-label">API Endpoint</label>
+              <input type="text" class="form-control" id="endpoint" value="/api/call-analytics" placeholder="https://your-domain.com/api/call-analytics"/>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">API Key</label>
+              <input type="password" class="form-control" id="apiKey" value="sk_track3_987654321" placeholder="sk_track3_..."/>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Language</label>
+              <select class="form-control" id="language">
+                <option value="Tamil">Tamil (Tanglish)</option>
+                <option value="Hindi">Hindi (Hinglish)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Audio Recording</label>
+              <div class="upload-zone" id="uploadZone">
+                <input type="file" id="audioFile" accept=".mp3,audio/mpeg"/>
+                <div class="upload-icon">🎵</div>
+                <div class="upload-title">Drop MP3 here</div>
+                <div class="upload-sub">or click to browse · max 25MB</div>
+              </div>
+              <div class="file-badge" id="fileBadge">
+                ✓ <span id="fileName">File ready</span>
+              </div>
+            </div>
+
+            <button class="btn-submit" id="submitBtn" onclick="analyzeCall()">
+              ⚡ &nbsp;Run Compliance Analysis
+            </button>
+
+            <div class="progress-wrap" id="progressWrap">
+              <div class="progress-track"><div class="progress-fill"></div></div>
+              <div class="progress-steps">
+                <div class="progress-step" id="step1"><div class="step-dot"></div>Uploading</div>
+                <div class="progress-step" id="step2"><div class="step-dot"></div>Transcribing</div>
+                <div class="progress-step" id="step3"><div class="step-dot"></div>Analyzing</div>
+                <div class="progress-step" id="step4"><div class="step-dot"></div>Done</div>
+              </div>
+            </div>
+
+            <div class="error-banner" id="errorBanner"></div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: RESULTS PANEL -->
+      <div id="resultsArea">
+
+        <!-- Empty state -->
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon">📊</div>
+          <div class="empty-title">No Analysis Yet</div>
+          <div class="empty-sub">Configure your endpoint, upload an MP3 call recording, and click Run Analysis to see results here.</div>
+        </div>
+
+        <!-- Results -->
+        <div class="results-panel" id="results">
+
+          <!-- Metric Cards -->
+          <div class="metrics-row section">
+            <div class="metric-card blue">
+              <div class="metric-icon">📈</div>
+              <div class="metric-val" id="mCompliance">—</div>
+              <div class="metric-label">Compliance</div>
+            </div>
+            <div class="metric-card green">
+              <div class="metric-icon">💳</div>
+              <div class="metric-val" id="mPayment">—</div>
+              <div class="metric-label">Payment Intent</div>
+            </div>
+            <div class="metric-card amber">
+              <div class="metric-icon">🎭</div>
+              <div class="metric-val" id="mSentiment">—</div>
+              <div class="metric-label">Sentiment</div>
+            </div>
+            <div class="metric-card purple">
+              <div class="metric-icon">🔑</div>
+              <div class="metric-val" id="mKeywords">—</div>
+              <div class="metric-label">Keywords</div>
+            </div>
+          </div>
+
+          <!-- Tabs -->
+          <div class="result-tabs">
+            <button class="result-tab active" onclick="switchTab('sop', this)">SOP Validation</button>
+            <button class="result-tab" onclick="switchTab('transcript', this)">Transcript</button>
+            <button class="result-tab" onclick="switchTab('analytics', this)">Analytics</button>
+            <button class="result-tab" onclick="switchTab('keywords', this)">Keywords</button>
+          </div>
+
+          <!-- TAB: SOP -->
+          <div class="tab-content active section" id="tab-sop">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title"><div class="card-title-dot"></div>SOP Step Breakdown</div>
+                <div id="sopStatusBadge"></div>
+              </div>
+              <div class="card-body">
+                <div class="sop-grid" id="sopGrid"></div>
+                <div class="compliance-section">
+                  <div class="compliance-header">
+                    <div class="compliance-label">Overall Compliance Score</div>
+                    <div class="compliance-score" id="sopScore">0%</div>
+                  </div>
+                  <div class="compliance-track">
+                    <div class="compliance-fill" id="sopBar"></div>
+                  </div>
+                  <div class="compliance-explanation" id="sopExplanation"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB: TRANSCRIPT -->
+          <div class="tab-content section" id="tab-transcript">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title"><div class="card-title-dot"></div>Full Transcript</div>
+                <span id="langTag" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-muted);"></span>
+              </div>
+              <div class="card-body">
+                <div class="transcript-box" id="transcriptBox"></div>
+                <hr class="divider"/>
+                <div class="card-title" style="margin-bottom:12px;"><div class="card-title-dot"></div>AI Summary</div>
+                <div class="summary-box" id="summaryBox"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB: ANALYTICS -->
+          <div class="tab-content section" id="tab-analytics">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title"><div class="card-title-dot"></div>Business Intelligence</div>
+              </div>
+              <div class="card-body">
+                <div class="analytics-grid">
+                  <div class="analytic-item">
+                    <div class="analytic-label">Payment Preference</div>
+                    <div class="analytic-value val-blue" id="aPayment">—</div>
+                  </div>
+                  <div class="analytic-item">
+                    <div class="analytic-label">Rejection Reason</div>
+                    <div class="analytic-value" id="aRejection">—</div>
+                  </div>
+                  <div class="analytic-item">
+                    <div class="analytic-label">Customer Sentiment</div>
+                    <div id="aSentiment"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB: KEYWORDS -->
+          <div class="tab-content section" id="tab-keywords">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title"><div class="card-title-dot"></div>Extracted Keywords</div>
+                <span id="kwCount" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text-muted);"></span>
+              </div>
+              <div class="card-body">
+                <div class="keywords-wrap" id="keywordsWrap"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Raw JSON -->
+          <div class="section">
+            <button class="json-toggle-btn" onclick="toggleJson()">
+              <span id="jsonIcon">▶</span> View Raw JSON Response
+            </button>
+            <div class="json-viewer" id="jsonViewer"></div>
+          </div>
+
+        </div>
+      </div>
     </div>
-
-    <!-- Raw JSON -->
-    <button class="json-toggle" onclick="toggleJson()">
-      <span id="jsonToggleIcon">▶</span> View Raw JSON Response
-    </button>
-    <div class="json-raw" id="jsonRaw"></div>
-
   </div>
 
   <footer>
-    Built for GUVI HCL Hackathon · Call Center Compliance · Powered by Whisper + GPT-4o
+    <div class="container">
+      Built for <span>GUVI HCL Hackathon</span> · Track 3: Call Center Compliance ·
+      Powered by <span>Groq Whisper</span> + <span>LLaMA 3.3</span>
+    </div>
   </footer>
 </div>
 
 <script>
-  let fileBase64 = null;
+// ============================================================
+// THEME
+// ============================================================
+let currentTheme = localStorage.getItem('calliq-theme') || 'dark';
 
-  // File upload handler
-  document.getElementById('audioFile').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    document.getElementById('fileName').textContent = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
-    document.getElementById('fileReady').classList.add('show');
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('themeBtn').textContent = t === 'dark' ? '☀️' : '🌙';
+  localStorage.setItem('calliq-theme', t);
+}
 
-    const reader = new FileReader();
-    reader.onload = function(ev) {
-      const b64 = ev.target.result.split(',')[1];
-      fileBase64 = b64;
-    };
-    reader.readAsDataURL(file);
+function toggleTheme() {
+  currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  applyTheme(currentTheme);
+}
+
+applyTheme(currentTheme);
+
+// ============================================================
+// FILE UPLOAD
+// ============================================================
+let fileBase64 = null;
+let callsAnalyzed = 0;
+
+document.getElementById('audioFile').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const sizeKB = (file.size / 1024).toFixed(1);
+  document.getElementById('fileName').textContent = `${file.name} · ${sizeKB} KB`;
+  document.getElementById('fileBadge').classList.add('show');
+
+  const reader = new FileReader();
+  reader.onload = ev => { fileBase64 = ev.target.result.split(',')[1]; };
+  reader.readAsDataURL(file);
+});
+
+const zone = document.getElementById('uploadZone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+zone.addEventListener('drop', e => {
+  e.preventDefault();
+  zone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) {
+    document.getElementById('audioFile').files = e.dataTransfer.files;
+    document.getElementById('audioFile').dispatchEvent(new Event('change'));
+  }
+});
+
+// ============================================================
+// STEP ANIMATION
+// ============================================================
+let stepTimer = null;
+
+function animateSteps() {
+  const steps = ['step1','step2','step3'];
+  let i = 0;
+  // reset
+  steps.forEach(s => {
+    document.getElementById(s).className = 'progress-step';
   });
+  document.getElementById('step4').className = 'progress-step';
 
-  // Drag & drop
-  const zone = document.getElementById('uploadZone');
-  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
-  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
-  zone.addEventListener('drop', e => {
-    e.preventDefault();
-    zone.classList.remove('drag-over');
-    const file = e.dataTransfer.files[0];
-    if (file) {
-      document.getElementById('audioFile').files = e.dataTransfer.files;
-      document.getElementById('audioFile').dispatchEvent(new Event('change'));
+  stepTimer = setInterval(() => {
+    if (i < steps.length) {
+      if (i > 0) document.getElementById(steps[i-1]).className = 'progress-step done';
+      document.getElementById(steps[i]).className = 'progress-step active';
+      i++;
     }
-  });
+  }, 8000 / steps.length);
+}
 
-  async function analyzeCall() {
-    const endpoint = document.getElementById('endpoint').value.trim();
-    const apiKey = document.getElementById('apiKey').value.trim();
-    const language = document.getElementById('language').value;
+// ============================================================
+// ANALYZE
+// ============================================================
+async function analyzeCall() {
+  const endpoint = document.getElementById('endpoint').value.trim();
+  const apiKey = document.getElementById('apiKey').value.trim();
+  const language = document.getElementById('language').value;
 
-    if (!fileBase64) { showError('Please upload an MP3 file first.'); return; }
-    if (!apiKey) { showError('API Key is required.'); return; }
-    if (!endpoint) { showError('Endpoint URL is required.'); return; }
+  if (!fileBase64) { showError('Please upload an MP3 file first.'); return; }
+  if (!apiKey) { showError('API Key is required.'); return; }
+  if (!endpoint) { showError('Endpoint URL is required.'); return; }
 
-    setLoading(true);
-    hideError();
+  setLoading(true);
+  hideError();
+  animateSteps();
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 180000);
+
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
+      body: JSON.stringify({ language, audioFormat: 'mp3', audioBase64: fileBase64 }),
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+    const raw = await res.text();
+
+    if (res.status === 401) throw new Error('Unauthorized — Invalid API Key');
+    if (!res.ok) throw new Error(`API error ${res.status}: ${raw.substring(0, 120)}`);
+
+    const data = JSON.parse(raw);
+    callsAnalyzed++;
+    document.getElementById('statCalls').textContent = callsAnalyzed;
+
+    // Mark all steps done
+    clearInterval(stepTimer);
+    ['step1','step2','step3'].forEach(s => {
+      document.getElementById(s).className = 'progress-step done';
+    });
+    document.getElementById('step4').className = 'progress-step active';
+
+    setTimeout(() => renderResults(data), 300);
+
+  } catch (err) {
+    clearInterval(stepTimer);
+    if (err.name === 'AbortError') showError('Request timed out after 3 minutes. Try again.');
+    else showError(err.message || 'Request failed.');
+  } finally {
+    setLoading(false);
+  }
+}
+
+// ============================================================
+// RENDER RESULTS
+// ============================================================
+function renderResults(data) {
+  document.getElementById('emptyState').style.display = 'none';
+  const results = document.getElementById('results');
+  results.style.display = 'block';
+  results.classList.remove('show');
+  void results.offsetWidth;
+  results.classList.add('show');
+
+  const sop = data.sop_validation || {};
+  const analytics = data.analytics || {};
+  const score = sop.complianceScore ?? 0;
+  const pct = Math.round(score * 100);
+
+  // Metric cards
+  document.getElementById('mCompliance').textContent = pct + '%';
+  document.getElementById('mPayment').textContent = (analytics.paymentPreference || '—').replace('_',' ');
+  document.getElementById('mSentiment').textContent = analytics.sentiment || '—';
+  document.getElementById('mKeywords').textContent = (data.keywords || []).length;
+
+  // SOP Grid
+  const sopSteps = [
+    { key: 'greeting',         label: 'Greeting',     icon: '👋' },
+    { key: 'identification',   label: 'ID Verify',    icon: '🪪' },
+    { key: 'problemStatement', label: 'Problem',      icon: '🎯' },
+    { key: 'solutionOffering', label: 'Solution',     icon: '💡' },
+    { key: 'closing',          label: 'Closing',      icon: '✅' },
+  ];
+
+  document.getElementById('sopGrid').innerHTML = sopSteps.map(s => `
+    <div class="sop-item ${sop[s.key] ? 'pass' : 'fail'}">
+      <span class="sop-item-icon">${sop[s.key] ? s.icon : '❌'}</span>
+      <div class="sop-item-label">${s.label}</div>
+    </div>
+  `).join('');
+
+  // Compliance bar
+  document.getElementById('sopScore').textContent = pct + '%';
+  setTimeout(() => {
+    document.getElementById('sopBar').style.width = pct + '%';
+  }, 100);
+
+  const isFollowed = sop.adherenceStatus === 'FOLLOWED';
+  document.getElementById('sopStatusBadge').innerHTML = `
+    <span class="compliance-status ${isFollowed ? 'followed' : 'not-followed'}">
+      ${isFollowed ? '✓ FOLLOWED' : '✗ NOT FOLLOWED'}
+    </span>`;
+
+  document.getElementById('sopExplanation').textContent = sop.explanation || '';
+
+  // Transcript & Summary
+  document.getElementById('transcriptBox').textContent = data.transcript || '';
+  document.getElementById('summaryBox').textContent = data.summary || '';
+  document.getElementById('langTag').textContent = '🌐 ' + (data.language || '');
+
+  // Analytics
+  document.getElementById('aPayment').textContent = analytics.paymentPreference || '—';
+
+  const rejection = analytics.rejectionReason || '—';
+  const rejEl = document.getElementById('aRejection');
+  rejEl.textContent = rejection;
+  rejEl.className = 'analytic-value ' + (rejection === 'NONE' ? 'val-green' : 'val-amber');
+
+  const sentiment = analytics.sentiment || '';
+  const sentColor = sentiment === 'Positive' ? 'var(--green)' : sentiment === 'Negative' ? 'var(--red)' : 'var(--amber)';
+  const sentBg = sentiment === 'Positive' ? 'var(--green-soft)' : sentiment === 'Negative' ? 'var(--red-soft)' : 'var(--amber-soft)';
+  const sentIcon = sentiment === 'Positive' ? '😊' : sentiment === 'Negative' ? '😞' : '😐';
+  document.getElementById('aSentiment').innerHTML = `
+    <div class="sentiment-badge" style="background:${sentBg};color:${sentColor};border:1px solid ${sentColor}33;">
+      ${sentIcon} ${sentiment}
+    </div>`;
+
+  // Keywords
+  const kws = data.keywords || [];
+  document.getElementById('kwCount').textContent = kws.length + ' keywords';
+  document.getElementById('keywordsWrap').innerHTML = kws.map(k =>
+    `<span class="kw-chip"># ${k}</span>`
+  ).join('');
+
+  // Raw JSON
+  document.getElementById('jsonViewer').textContent = JSON.stringify(data, null, 2);
+
+  // Switch to SOP tab by default
+  switchTab('sop', document.querySelector('.result-tab'));
+
+  results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ============================================================
+// TABS
+// ============================================================
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.result-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+// ============================================================
+// JSON TOGGLE
+// ============================================================
+function toggleJson() {
+  const el = document.getElementById('jsonViewer');
+  const icon = document.getElementById('jsonIcon');
+  el.classList.toggle('show');
+  icon.textContent = el.classList.contains('show') ? '▼' : '▶';
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function setLoading(state) {
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = state;
+  btn.innerHTML = state ? '⏳ &nbsp;Processing...' : '⚡ &nbsp;Run Compliance Analysis';
+  document.getElementById('progressWrap').classList.toggle('show', state);
+  if (state) {
+    document.getElementById('results').style.display = 'none';
     document.getElementById('results').classList.remove('show');
-
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 180000); // 3 min timeout
-
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey
-        },
-        body: JSON.stringify({
-          language: language,
-          audioFormat: 'mp3',
-          audioBase64: fileBase64
-        }),
-        signal: controller.signal
-      });
-
-      clearTimeout(timeoutId);
-
-      const raw = await res.text();
-      console.log('Raw response:', raw);
-
-      if (res.status === 401) throw new Error('Unauthorized: Invalid API Key');
-      if (!res.ok) throw new Error('API returned status ' + res.status + ': ' + raw);
-
-      let data;
-      try {
-        data = JSON.parse(raw);
-      } catch(e) {
-        throw new Error('Invalid JSON response: ' + raw.substring(0, 200));
-      }
-
-      console.log('Parsed data:', data);
-      renderResults(data);
-
-    } catch (err) {
-      if (err.name === 'AbortError') {
-        showError('Request timed out after 3 minutes. Try again.');
-      } else {
-        showError(err.message || 'Request failed. Check endpoint and API key.');
-      }
-      console.error('Error:', err);
-    } finally {
-      setLoading(false);
-    }
+    document.getElementById('emptyState').style.display = 'flex';
   }
+}
 
-  function renderResults(data) {
-    const resultsEl = document.getElementById('results');
-    resultsEl.style.display = 'block';
+function showError(msg) {
+  const el = document.getElementById('errorBanner');
+  el.textContent = '⚠ ' + msg;
+  el.classList.add('show');
+}
 
-    // Score cards
-    const score = data.sop_validation?.complianceScore ?? 0;
-    document.getElementById('scoreCompliance').textContent = Math.round(score * 100) + '%';
-    document.getElementById('scorePayment').textContent = (data.analytics?.paymentPreference ?? '—').replace('_', ' ');
-    document.getElementById('scoreSentiment').textContent = data.analytics?.sentiment ?? '—';
-    document.getElementById('scoreAdherence').textContent = data.sop_validation?.adherenceStatus === 'FOLLOWED' ? '✓' : '✗';
-
-    // SOP Steps
-    const sop = data.sop_validation ?? {};
-    const steps = [
-      { key: 'greeting', label: 'Greeting' },
-      { key: 'identification', label: 'Identification' },
-      { key: 'problemStatement', label: 'Problem Statement' },
-      { key: 'solutionOffering', label: 'Solution Offering' },
-      { key: 'closing', label: 'Closing' },
-    ];
-    document.getElementById('sopSteps').innerHTML = steps.map(s =>
-      `<div class="sop-step ${sop[s.key] ? 'pass' : 'fail'}">
-        <div class="sop-dot"></div>${s.label}
-      </div>`
-    ).join('');
-
-    const barEl = document.getElementById('complianceBar');
-    if (barEl) barEl.style.width = (score * 100) + '%';
-    document.getElementById('complianceLabel').textContent = Math.round(score * 100) + '% SOP compliance';
-    document.getElementById('sopExplanation').textContent = sop.explanation ?? '';
-
-    // Transcript & Summary
-    document.getElementById('transcriptBox').textContent = data.transcript ?? '';
-    document.getElementById('summaryBox').textContent = data.summary ?? '';
-    document.getElementById('langBadge').textContent = '🌐 ' + (data.language ?? '');
-
-    // Analytics
-    document.getElementById('analyticsPayment').textContent = data.analytics?.paymentPreference ?? '—';
-    const rejection = data.analytics?.rejectionReason ?? '—';
-    document.getElementById('analyticsRejection').textContent = rejection;
-    document.getElementById('analyticsRejection').className = 'analytic-value ' + (rejection === 'NONE' ? 'val-none' : 'val-rejection');
-
-    const sentiment = data.analytics?.sentiment ?? '';
-    const sentEl = document.getElementById('analyticsSentiment');
-    sentEl.textContent = sentiment;
-    sentEl.className = 'analytic-value val-' + sentiment.toLowerCase();
-
-    // Keywords
-    const kws = data.keywords ?? [];
-    document.getElementById('keywordsWrap').innerHTML = kws.map(k =>
-      `<span class="kw-tag">${k}</span>`
-    ).join('');
-
-    // Raw JSON
-    document.getElementById('jsonRaw').textContent = JSON.stringify(data, null, 2);
-
-    resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  function toggleJson() {
-    const el = document.getElementById('jsonRaw');
-    const icon = document.getElementById('jsonToggleIcon');
-    el.classList.toggle('show');
-    icon.textContent = el.classList.contains('show') ? '▼' : '▶';
-  }
-
-  function setLoading(state) {
-    document.getElementById('analyzeBtn').disabled = state;
-    document.getElementById('analyzeBtn').textContent = state ? '⏳ Processing...' : '⚡ Run Compliance Analysis';
-    document.getElementById('loadingBar').classList.toggle('show', state);
-    document.getElementById('statusMsg').classList.toggle('show', state);
-    if (!state) document.getElementById('results').classList.remove('show');
-  }
-
-  function showError(msg) {
-    const el = document.getElementById('errorBox');
-    el.textContent = '⚠ ' + msg;
-    el.classList.add('show');
-  }
-
-  function hideError() {
-    document.getElementById('errorBox').classList.remove('show');
-  }
+function hideError() {
+  document.getElementById('errorBanner').classList.remove('show');
+}
 </script>
 </body>
 </html>
