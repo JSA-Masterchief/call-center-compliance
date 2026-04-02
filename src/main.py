@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from src.models import CallAnalyticsRequest
 from src.transcriber import transcribe_audio
 from src.analyzer import analyze_transcript
+from src.vector_store import store_transcript, search_transcripts, get_store_stats
 
 load_dotenv()
 
@@ -33,7 +34,16 @@ async def serve_ui():
 
 @app.get("/health")
 async def health_check():
-    return {"status": "ok"}
+    stats = get_store_stats()
+    return {"status": "ok", "vector_store": stats}
+
+
+@app.get("/api/search")
+async def search(query: str, x_api_key: str = Header(...)):
+    if x_api_key != API_KEY:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    results = search_transcripts(query)
+    return {"query": query, "results": results}
 
 
 @app.post("/api/call-analytics")
@@ -48,13 +58,21 @@ async def call_analytics(
         raise HTTPException(status_code=400, detail="Invalid or missing audioBase64")
 
     try:
-        # Process directly without Celery
+        # Step 1 — Transcribe
         transcript = transcribe_audio(request.audioBase64, request.language.value)
-
         if not transcript:
             raise ValueError("Transcription returned empty result.")
 
+        # Step 2 — Analyze
         analysis = analyze_transcript(transcript, request.language.value)
+
+        # Step 3 — Store in vector store
+        doc_id = store_transcript(
+            transcript=transcript,
+            language=request.language.value,
+            summary=analysis.get("summary", ""),
+            keywords=analysis.get("keywords", []),
+        )
 
         return JSONResponse(content={
             "status": "success",
